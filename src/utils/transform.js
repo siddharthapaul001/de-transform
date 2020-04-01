@@ -3,6 +3,11 @@ import { inverse, parseCoefficients, applyTransform } from './matrix';
 const doc = document;
 let __dragConfig = {};
 
+function filterEvent (event) {
+  let e = event && (event.sourceEvent || event.originalEvent || event);
+  return (e && ((e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]))) || e || { pageX: 0, pageY : 0 };
+}
+
 // todo: need improvement if transform applied on a scrollable body. pageX, pageY
 function parseEventCoordinates (event) {
     let x = event.pageX || event.clientX + doc.scrollLeft + doc.body.scrollLeft,
@@ -14,11 +19,11 @@ function parseEventCoordinates (event) {
     };
 }
 function getOriCoordinate(element, event) {
-  let { x, y } = parseEventCoordinates(event), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, hasTransform = false, is3DTransform = false, scrollTop = 0, scrollLeft = 0;
+  let { x, y } = parseEventCoordinates(filterEvent(event)), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, hasTransform = false, is3DTransform = false, scrollTop = 0, scrollLeft = 0;
 
   do {
     cs = window.getComputedStyle(el);
-    if (cs.getPropertyValue('overflow') === 'auto' || cs.getPropertyValue('overflow') === 'scroll') {
+    if (el.tagName !== 'BODY' && cs.getPropertyValue('overflow') === 'auto' || cs.getPropertyValue('overflow') === 'scroll') {
       if (el.scrollHeight > el.offsetHeight) {
         scrollTop += el.scrollTop;
       }
@@ -43,7 +48,7 @@ function getOriCoordinate(element, event) {
           elem: el,
           oriX,
           oriY,
-          invM: prepareInverseMatrix(mat),
+          invM: inverse(mat),
           offsetLeft: left,
           offsetTop: top
         });
@@ -80,7 +85,7 @@ function getOriCoordinate(element, event) {
       }
     }
     el = el.parentElement;
-  } while (el && el.tagName !== 'BODY');
+  } while (el);
 
   x += scrollLeft;
   y += scrollTop;
@@ -139,7 +144,7 @@ function getOriCoordinate(element, event) {
 function getOriDragDistance (element, event, state) {
   let oriCoord = getOriCoordinate(element, event),
     dx = 0, dy = 0,
-    { x, y } = parseEventCoordinates(event), config = __dragConfig;
+    { x, y } = parseEventCoordinates(filterEvent(event)), config = __dragConfig;
 
   if (oriCoord) {
     x = oriCoord.x;

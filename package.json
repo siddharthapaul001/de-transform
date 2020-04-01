@@ -23,5 +23,11 @@
   "bugs": {
     "url": "https://github.com/siddharthapaul001/de-transform/issues"
   },
-  "homepage": "https://github.com/siddharthapaul001/de-transform#readme"
+  "homepage": "https://github.com/siddharthapaul001/de-transform#readme",
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
 }
