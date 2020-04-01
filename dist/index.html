@@ -41,15 +41,29 @@
 
 <body>
     <div class="container">
-        <h3>Check console</h3>
+        <h2>De-Transform</h2>
+        <span>Click on the red Box</span>
         <div id="layer-1" class="layer-1">
             <div id="box" class="box">
                 <span>300px X 200px</span>
             </div>
         </div>
+        <div class="outputs">
+            <h3>clientX, clientY from event</h3>
+            <label for="op-clientx">clientX</label>
+            <input id="op-clientx" type="text" readonly />
+            <label for="op-clienty">clientY</label>
+            <input id="op-clienty" type="text" readonly />
+
+            <h3>Original relative Coordinates for the transformed red box</h3>
+            <label for="op-x">X</label>
+            <input id="op-x" type="text" readonly />
+            <label for="op-y">Y</label>
+            <input id="op-y" type="text" readonly />
+        </div>
         <div id="inputs" class="container-inputs">
             <div class="inp-group">
-                <label for="scale">transform:</label>
+                <label for="inp-transform">transform:</label>
                 <input id="inp-transform" type="text" value="perspective(1000px) rotateX(45deg) rotate(45deg)" />
             </div>
             <div class="inp-group">
@@ -64,12 +78,19 @@
         inpTransform = document.getElementById('inp-transform'),
         inpTransformOrigin = document.getElementById('inp-transform-origin'),
         btnSet = document.getElementById('btn-set'),
-        box = document.getElementById('box');
+        box = document.getElementById('box'),
+        opClientX = document.getElementById('op-clientx'),
+        opClientY = document.getElementById('op-clienty'),
+        opX = document.getElementById('op-x'),
+        opY = document.getElementById('op-y');
 
         (function () {
             elem.addEventListener('click', function (e) {
-                console.log('Event Coordinates', { clientX: e.clientX, clientY: e.clientY },
-                    'Original Coordinates: ', DeTransform.getOriCoordinate(elem, e));
+                var oriCoord = DeTransform.getOriCoordinate(elem, e);
+                opClientX.value = e.clientX;
+                opClientY.value = e.clientY;
+                opX.value = oriCoord.x.toFixed(0);
+                opY.value = oriCoord.y.toFixed(0);
             });
             btnSet.addEventListener('click', function(e) {
                 box.style.cssText = 'transform: ' + inpTransform.value + ';transform-origin:' + inpTransformOrigin.value + ';';
