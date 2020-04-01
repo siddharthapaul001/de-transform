@@ -17,35 +17,63 @@
             text-align: center;
         }
 
-        .layer-1{
-            margin: 200px auto;
+        .layer-1 {
+            margin: 100px auto;
         }
 
-        .red-box {
+        .box {
             display: inline-block;
-            width: 600px;
-            height: 400px;
+            width: 300px;
+            height: 200px;
             background-color: #ff0000;
-            transform: rotate(90deg);
+            transform: perspective(1000px) rotateX(45deg) rotate(45deg);
+        }
+
+        .box span {
+            margin-top: 92px;
+            color: #fafafa;
+            display: inline-block;
         }
     </style>
-    <script src="build/detransform.js"></script>
+    <script src="build/detransform.min.js"></script>
 </head>
 
 <body>
     <div class="container">
         <h3>Check console</h3>
         <div id="layer-1" class="layer-1">
-            <div id="red-box" class="red-box">
+            <div id="box" class="box">
+                <span>300px X 200px</span>
             </div>
+        </div>
+        <div id="inputs" class="container-inputs">
+            <div class="inp-group">
+                <label for="scale">transform:</label>
+                <input id="inp-transform" type="text" value="perspective(1000px) rotateX(45deg) rotate(45deg)" />
+            </div>
+            <div class="inp-group">
+                <label for="inp-transform-origin">transform-origin:</label>
+                <input id="inp-transform-origin" type="text" value="center center" />
+            </div>
+            <button type="button" id="btn-set">Set Transform</button>
         </div>
     </div>
     <script>
-        const elem = document.getElementById('red-box');
-        elem.addEventListener('click', function (e) {
-            console.log('Event Coordinates', { clientX: e.clientX, clientY: e.clientY },
-            'Original Coordinates: ', DeTransform.getOriCoordinate(elem, e));
-        });
+        const elem = document.getElementById('box'),
+        inpTransform = document.getElementById('inp-transform'),
+        inpTransformOrigin = document.getElementById('inp-transform-origin'),
+        btnSet = document.getElementById('btn-set'),
+        box = document.getElementById('box');
+
+        (function () {
+            elem.addEventListener('click', function (e) {
+                console.log('Event Coordinates', { clientX: e.clientX, clientY: e.clientY },
+                    'Original Coordinates: ', DeTransform.getOriCoordinate(elem, e));
+            });
+            btnSet.addEventListener('click', function(e) {
+                box.style.cssText = 'transform: ' + inpTransform.value + ';transform-origin:' + inpTransformOrigin + ';';
+            });
+        })();
     </script>
 </body>
 
