@@ -1,38 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Test Enviornment</title>
     <style>
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
         }
+
         .container {
             text-align: center;
         }
+
         .red-box {
             display: inline-block;
             width: 600px;
             height: 400px;
             background-color: #ff0000;
-            transform: rotate(90deg);
+            /* transform: rotate(90deg); */
         }
     </style>
     <script src="detransform.js"></script>
 </head>
+
 <body>
     <div class="container">
-        <div id="red-box" class="red-box">
+        <div id="layer-1" class="layer-1">
+            <div id="red-box" class="red-box">
+            </div>
         </div>
     </div>
     <script>
         const elem = document.getElementById('red-box');
-        elem.addEventListener('click', function(e) {
+        elem.addEventListener('click', function (e) {
             console.log(DeTransform.getOriCoordinate(elem, e));
         });
     </script>
 </body>
+
 </html>

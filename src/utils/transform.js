@@ -121,23 +121,23 @@ function getOriCoordinate(element, event) {
     return {
       x, y
     };
-  }
+  } else if (hasTransform) {
   // 2d transform applid
   while ((el = elList.pop())) {
-    x = x - el.offsetLeft;
-    y = y - el.offsetTop;
-    temp = applyTransform({ x, y }, { oriX: el.oriX, oriY: el.oriY }, el.invM);
-    x = temp.x + el.offsetLeft;
-    y = temp.y + el.offsetTop;
+      x = x - el.offsetLeft;
+      y = y - el.offsetTop;
+      temp = applyTransform({ x, y }, { oriX: el.oriX, oriY: el.oriY }, el.invM);
+      x = temp.x + el.offsetLeft;
+      y = temp.y + el.offsetTop;
+    }
   }
 
-  if (hasTransform) {
-    x -= left;
-    y -= top;
-    return {
-      x, y
-    };
-  }
+  x -= left;
+  y -= top;
+  return {
+    x, y
+  };
+  
 }
 
 // todo: remove argument state. parse state from event.
