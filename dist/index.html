@@ -17,6 +17,10 @@
             text-align: center;
         }
 
+        .layer-1{
+            margin: 200px auto;
+        }
+
         .red-box {
             display: inline-block;
             width: 600px;
@@ -25,11 +29,12 @@
             /* transform: rotate(90deg); */
         }
     </style>
-    <script src="detransform.js"></script>
+    <script src="build/detransform.js"></script>
 </head>
 
 <body>
     <div class="container">
+        <h3>Check console</h3>
         <div id="layer-1" class="layer-1">
             <div id="red-box" class="red-box">
             </div>
@@ -38,7 +43,8 @@
     <script>
         const elem = document.getElementById('red-box');
         elem.addEventListener('click', function (e) {
-            console.log(DeTransform.getOriCoordinate(elem, e));
+            console.log('Event Coordinates', { clientX: e.clientX, clientY: e.clientY },
+            'Original Coordinates: ', DeTransform.getOriCoordinate(elem, e));
         });
     </script>
 </body>

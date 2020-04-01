@@ -4,6 +4,9 @@
   "description": "A javascript module to calculate original coordinates relative to a DOM element when CSS transforms are applied on it or it's parent elements.",
   "main": "src/index.js",
   "scripts": {
+    "build-prod": "webpack --mode production",
+    "build-dev": "webpack --mode development",
+    "build": "npm run build-prod && npm run build-dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
