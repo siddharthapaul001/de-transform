@@ -1,7 +1,7 @@
-import { inverse, parseCoefficients, applyTransform } from './matrix';
+import { inverse, parseCoefficients } from './matrix';
 
 const doc = document;
-let __dragConfig = {};
+let __dragConfig = {}, UNDEF;
 
 function filterEvent (event) {
   let e = event && (event.sourceEvent || event.originalEvent || event);
@@ -18,8 +18,67 @@ function parseEventCoordinates (event) {
         y
     };
 }
-function getOriCoordinate(element, event) {
+
+
+function applyTransform (point, origin, mat) {
+  let { x, y, z } = point, { oriX, oriY } = origin, oriZ = origin.oriZ || 0, newW;
+  x = x - oriX;
+  y = y - oriY;
+  z = z - oriZ;
+  if (mat.length === 6) {
+    return {
+      x: (mat[0] * x + mat[1] * y + mat[2]) + oriX,
+      y: (mat[3] * x + mat[4] * y + mat[5]) + oriY
+    };
+  } else if (mat.length === 16) {
+    newW = (mat[12] * x + mat[13] * y + mat[14] * z + mat[15]);
+    return {
+      x: (mat[0] * x + mat[1] * y + mat[2] * z + mat[3]) / newW + oriX,
+      y: (mat[4] * x + mat[5] * y + mat[6] * z + mat[7]) / newW + oriY,
+      z: (mat[8] * x + mat[9] * y + mat[10] * z + mat[11]) / newW + oriZ,
+      w: newW
+    };
+  }
+}
+
+
+// alternate easy method
+// Note: not reliable for 3d transformation on firefox or other browsers
+// as this calucation relies on event.offsetX and event.offsetY which is experimental event attributes as per mdn
+function getOriCoordinateByOffsets (element, event) {
+  let x = event.offsetX, y = event.offsetY, dx = 0, dy = 0, tempEl, left, top;
+  if (element !== (event.target || event.srcElement)) {
+    dx = 0; dy = 0; tempEl = (event.target || event.srcElement);
+    do {
+      dx += tempEl.offsetLeft;
+      dy += tempEl.offsetTop;
+      tempEl = tempEl.offsetParent;
+    } while (tempEl);
+    tempEl = element;
+    do {
+      dx -= tempEl.offsetLeft;
+      dy -= tempEl.offsetTop;
+      tempEl = tempEl.offsetParent;
+    } while (tempEl);
+  }
+
+  x += dx;
+  y += dy;
+
+  return {
+    x, y
+  };
+}
+
+function getOriCoordinate(element, event, useOffset = false) {
   let { x, y } = parseEventCoordinates(filterEvent(event)), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, hasTransform = false, is3DTransform = false, scrollTop = 0, scrollLeft = 0;
+
+  // Note: This is a easier way to solve the problem.
+  // but it is not a reliable way as event.offsetX is experimental attribute
+  // which doesn't return accurate values for firefox (seen in 3d transform with perspective) and some browsers
+  if (useOffset && (event.offsetX !== UNDEF)) {
+    return getOriCoordinateByOffsets(element, event);
+  }
 
   do {
     cs = window.getComputedStyle(el);
@@ -37,6 +96,7 @@ function getOriCoordinate(element, event) {
       mat = cs.getPropertyValue('transform').split('(')[1].split(')')[0].split(',').map(e => parseFloat(e.trim()));
       if (mat.length === 6) {
         // 2d transformation matrix otherwise ignore
+        let [a, b, c, d, e, f] = mat;
         left = 0; top = 0; tempEl = el;
         do {
           left += tempEl.offsetLeft;
@@ -48,7 +108,13 @@ function getOriCoordinate(element, event) {
           elem: el,
           oriX,
           oriY,
-          invM: inverse(mat),
+          invM: inverse([
+            a, c, e,
+            b, d, f
+          ]),
+          matrix: [
+            a, c, e,
+            b, d, f],
           offsetLeft: left,
           offsetTop: top
         });
@@ -141,8 +207,8 @@ function getOriCoordinate(element, event) {
 }
 
 // todo: remove argument state. parse state from event.
-function getOriDragDistance (element, event, state) {
-  let oriCoord = getOriCoordinate(element, event),
+function getOriDragDistance (element, event, state, useOffset = false) {
+  let oriCoord = getOriCoordinate(element, event, useOffset),
     dx = 0, dy = 0,
     { x, y } = parseEventCoordinates(filterEvent(event)), config = __dragConfig;
 
@@ -169,7 +235,39 @@ function getOriDragDistance (element, event, state) {
   };
 }
 
+// todo: extend support for all css 2d and 3d transform strings
+function applyTransformAtPoint(point, cssMatrixStr, origin) {
+  let mat = cssMatrixStr.slice(0, 6).toLowerCase() === 'matrix' && cssMatrixStr.split('(')[1].split(')')[0].split(',').map(e => parseFloat(e.trim()));
+  if (mat.length === 6) {
+    // 2d transformation matrix
+    let [
+      a, b, c,
+      d, e, f
+    ] = mat;
+    mat = [
+      a, c, e,
+      b, d, f
+    ];
+  } else if (mat.length === 16) {
+    // 3d transformation matrix
+    let [
+      a1, b1, c1, d1,
+      a2, b2, c2, d2,
+      a3, b3, c3, d3,
+      a4, b4, c4, d4
+    ] = mat;
+    mat = [
+      a1, a2, a3, a4,
+      b1, b2, b3, b4,
+      c1, c2, c3, c4,
+      d1, d2, d3, d4
+    ];
+  }
+  return applyTransform(point, {oriX: origin.x, oriY: origin.y, oriZ: origin.z || 0}, mat);
+}
+
 export {
     getOriCoordinate,
-    getOriDragDistance
+    getOriDragDistance,
+    applyTransformAtPoint
 }
