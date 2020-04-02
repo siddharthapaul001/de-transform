@@ -146,7 +146,9 @@ function getOriCoordinate(element, event, useOffset = false) {
             d1, d2, d3, d4
           ],
           offsetLeft: left,
-          offsetTop: top
+          offsetTop: top,
+          offsetHeight: el.offsetHeight,
+          offsetWidth: el.offsetWidth
         });
       }
     }
@@ -164,32 +166,28 @@ function getOriCoordinate(element, event, useOffset = false) {
     tempEl = tempEl.offsetParent;
   } while (tempEl);
 
-  if (is3DTransform) {
-    // 3d transform applied will solve only 1 element
-    tempEl = elList[0];
-    let chartBBox = { x1: left - tempEl.offsetLeft, y1: top - tempEl.offsetTop, x2: left + element.offsetWidth - tempEl.offsetLeft, y2: top + element.offsetHeight - tempEl.offsetTop },
-      bx1 = applyTransform({ x: chartBBox.x1, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-      bx2 = applyTransform({ x: chartBBox.x2, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-      bx3 = applyTransform({ x: chartBBox.x2, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-      // bx4 = applyTransform({ x: chartBBox.x1, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-      { A, B, C } = parseCoefficients(inverse([
-        bx1.x, bx1.y, 1,
-        bx2.x, bx2.y, 1,
-        bx3.x, bx3.y, 1
-      ]), [bx1.z, bx2.z, bx3.z]), z;
-    x = x - tempEl.offsetLeft;
-    y = y - tempEl.offsetTop;
-    z = A * x + B * y + C;
-    temp = applyTransform({ x, y, z }, { oriX: ori[0], oriY: ori[1] }, inverse(tempEl.matrix));
-    x = temp.x - chartBBox.x1;
-    y = temp.y - chartBBox.y1;
-    z = temp.z;
-    return {
-      x, y
-    };
-  } else if (hasTransform) {
-  // 2d transform applid
-  while ((el = elList.pop())) {
+  while((el = elList.pop())) {
+    if (el.matrix.length === 16) {
+      tempEl = el;
+      let chartBBox = { x1: 0, y1: 0, x2: tempEl.offsetWidth, y2: tempEl.offsetHeight },
+        bx1 = applyTransform({ x: chartBBox.x1, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
+        bx2 = applyTransform({ x: chartBBox.x2, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
+        bx3 = applyTransform({ x: chartBBox.x2, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
+        // bx4 = applyTransform({ x: chartBBox.x1, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
+        { A, B, C } = parseCoefficients(inverse([
+          bx1.x, bx1.y, 1,
+          bx2.x, bx2.y, 1,
+          bx3.x, bx3.y, 1
+        ]), [bx1.z, bx2.z, bx3.z]), z;
+      x = x - tempEl.offsetLeft;
+      y = y - tempEl.offsetTop;
+      z = A * x + B * y + C;
+      temp = applyTransform({ x, y, z }, { oriX: ori[0], oriY: ori[1] }, inverse(tempEl.matrix));
+      x = temp.x + tempEl.offsetLeft;
+      y = temp.y + tempEl.offsetTop;
+      z = temp.z;
+    } else if (el.matrix.length === 6) {
+      // 2d transform applid
       x = x - el.offsetLeft;
       y = y - el.offsetTop;
       temp = applyTransform({ x, y }, { oriX: el.oriX, oriY: el.oriY }, el.invM);
@@ -197,7 +195,6 @@ function getOriCoordinate(element, event, useOffset = false) {
       y = temp.y + el.offsetTop;
     }
   }
-
   x -= left;
   y -= top;
   return {
