@@ -28,7 +28,7 @@ origin: { Object } required // transformation will be applied on the given point
 #### Example
 ```javascript
 // Applying CSS 2D transformation
-// 
+// equivalant matrix form of transform: "rotate(90deg)"
 DeTransform.applyTransformAtPoint(
   { x: 0, y: 0 },
   "matrix(6.12323e-17, 1, -1,6.12323e-17, 0, 0)",
@@ -75,7 +75,7 @@ So it is prefered to use useOffset = false when you need crossbrowser support.
 ...
 <script src="detransform.min.js"></script>
 ...
-<div style="text-align:center; transform: rotate(180deg)">
+<div style="text-align:center; transform: perspective(1000px) rotateX(45deg) rotateY(15deg) scale(1.5)">
   <div id="elem" style="display:inline-block; width: 200; height: 100;background-color:#ff0000">
     <span>Click on it</span>
   </div>
@@ -92,3 +92,43 @@ So it is prefered to use useOffset = false when you need crossbrowser support.
 
 ### getOriDragDistance
 Takes HTML element and MouseEvent and returns the correct drag distance (dx and dy). Here the HTML element is required as under the hood it calculates the original event coordinates relative to the given HTML element using the getOriCoordinate in order to calculate the drag distance.
+
+#### Input Arguments
+```
+element: { HTMLElement } required
+event: { MouseEvent } required
+state: { String } required // possible values are 'start', 'move', 'end'
+useOffset: { Boolean } optional // Default is false
+```
+all arguments works same as it does for getOriCoordinate.
+
+#### Example
+
+```HTML
+...
+<script src="detransform.min.js"></script>
+...
+<div style="text-align:center; transform: rotate(45deg)">
+  <div id="elem" style="display:inline-block; width: 200; height: 100;background-color:#ff0000; transform:rotate(45deg);">
+    <span>Drag the text</span>
+  </div>
+</div>
+...
+<script>
+  (function(){
+
+    document.getElementById("elem").addEventListener('dragstart', function(evt){
+      DeTransform.getOriCoordinate(this, evt, 'start'); // drag event is started it'll start calculating distance from next drag 'move'
+    });
+  
+    document.getElementById("elem").addEventListener('drag', function(evt){
+      console.log(DeTransform.getOriCoordinate(this, evt, 'move'));
+      /* Select the text and drag the text you will find in the console, dx is changing according to the move in vertical direction and dy is changing accorfing to the horizontal move. Opposite!!! Because it's parent div is applied with transform of 45deg and itself is transformed 45deg so resultant transform of 90deg so real drag distance should be opposite in direction. */
+    });
+  
+    document.getElementById("elem").addEventListener('dragend', function(evt){
+      DeTransform.getOriCoordinate(this, evt, 'end'); // states that drag event ended.
+    });
+  })();
+</script>
+```
