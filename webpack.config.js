@@ -20,5 +20,21 @@ module.exports = {
     library: libraryName,
     libraryTarget: 'umd'
   },
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist/'),
+    compress: true,
+    open: true,
+    hot: true,
+    port: 8080
+  },
+  module: {
+    rules: [{
+      test: /\.js$/,
+      loader: 'babel-loader',
+      query: {
+        presets: ['@babel/preset-env']
+      }
+    }]
+  },
   mode: mode
 };
