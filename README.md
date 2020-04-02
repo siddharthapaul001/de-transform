@@ -55,7 +55,7 @@ event: { MouseEvent } required
 useOffset: { Boolean } optional // Default is false
 ```
 ##### What useOffset does ???
-This module basically solves the problems in two ways
+This module basically solves the problem in two ways
 ###### 1st (useOffset = false)
 It travarse the DOM tree from the provided element to BODY and create a list of elements on which transforms are applied and stores their transformation matrices and transformation-origin.
 Then it mathematically nullifies (inverse the transformation matrix and apply it on the new coordinate with the transformation origin) the transforms applied on the DOM elements (top to bottom hierarchically).
@@ -68,3 +68,27 @@ Definately the 2nd method looks efficient and very easy to understand. But Mouse
 But the 1st method is implemented to extend support all browsers which support CSS transform (IE9+). This method works well when css 2d transformation is applied on multiple parent elements in the same hierarchically of provided element but it supports to have only one css 3D transformation on any of it's parent element (this will be fixed soon).
 
 So it is prefered to use useOffset = false when you need crossbrowser support.
+
+#### Example
+
+```HTML
+...
+<script src="detransform.min.js"></script>
+...
+<div style="text-align:center; transform: rotate(180deg)">
+  <div id="elem" style="display:inline-block; width: 200; height: 100;background-color:#ff0000">
+    <span>Click on it</span>
+  </div>
+</div>
+...
+<script>
+  (function(){
+    document.getElementById("elem").addEventListener('click', function(evt){
+      console.log(DeTransform.getOriCoordinate(this, evt)); // If you click on the top-left (understand the real top left corner by the text position and flow) corner of the red div it will return (0, 0)
+    });
+  })();
+</script>
+```
+
+### getOriDragDistance
+Takes HTML element and MouseEvent and returns the correct drag distance (dx and dy). Here the HTML element is required as under the hood it calculates the original event coordinates relative to the given HTML element using the getOriCoordinate in order to calculate the drag distance.
