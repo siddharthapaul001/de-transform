@@ -88,6 +88,7 @@ So it is prefered to use useOffset = false when you need crossbrowser support.
     });
   })();
 </script>
+...
 ```
 
 ### getOriDragDistance
@@ -100,7 +101,13 @@ event: { MouseEvent } required
 state: { String } required // possible values are 'start', 'move', 'end'
 useOffset: { Boolean } optional // Default is false
 ```
-all arguments works same as it does for getOriCoordinate.
+
+Here the `state` argument defines the state of the drag event.
+- `state = 'start'` means a drag event is initiated and the coordinate values of the mouse event is stored.
+- `state = 'move'` means calculate distance from the mouse event coordinate of the start state to current mouse event coordinate
+- `state = 'end'` means a drag event is ended.
+ 
+all other arguments works same as it does for getOriCoordinate.
 
 #### Example
 
@@ -131,4 +138,5 @@ all arguments works same as it does for getOriCoordinate.
     });
   })();
 </script>
+...
 ```
