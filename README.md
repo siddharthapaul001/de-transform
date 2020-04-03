@@ -50,8 +50,8 @@ Takes HTML element and MouseEvent and returns the original (nullifying the css 2
 
 #### Input Arguments
 ```
-element: { HTMLElement } required
-event: { MouseEvent } required
+element: { HTMLElement } required,
+event: { MouseEvent } required,
 useOffset: { Boolean } optional // Default is false
 ```
 ##### What useOffset does ???
@@ -96,9 +96,9 @@ Takes HTML element and MouseEvent and returns the correct drag distance (dx and 
 
 #### Input Arguments
 ```
-element: { HTMLElement } required
-event: { MouseEvent } required
-state: { String } required // possible values are 'start', 'move', 'end'
+element: { HTMLElement } required,
+event: { MouseEvent } required,
+state: { String } required, // possible values are 'start', 'move', 'end'
 useOffset: { Boolean } optional // Default is false
 ```
 
