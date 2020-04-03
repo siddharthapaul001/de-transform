@@ -130,10 +130,11 @@ all other arguments works same as it does for getOriCoordinate.
   
     document.getElementById("elem").addEventListener('drag', function(evt){
       console.log(DeTransform.getOriCoordinate(this, evt, 'move'));
-      /* Select the text and drag the text you will find in the console, dx is changing according to the move in vertical
-        direction and dy is changing accorfing to the horizontal move. Opposite!!! Because it's parent div is applied with
-        transform of 45deg and itself is transformed 45deg so resultant transform of 90deg so real drag distance should be
-        opposite in direction. */
+      /* Select the text and drag the text you will find in the console, dx is changing according to the
+        move in vertical direction and dy is changing accorfing to the horizontal move.
+        Opposite!!!
+        Because it's parent div is applied with transform of 45deg and itself is transformed 45deg
+        so, resultant transform of 90deg so real drag distance should be opposite in direction. */
     });
   
     document.getElementById("elem").addEventListener('dragend', function(evt){
