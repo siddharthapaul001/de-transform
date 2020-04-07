@@ -92,7 +92,7 @@ function getOriCoordinate(element, event, useOffset = false) {
     { x: _bBox.left, y: _bBox.top, z: 1 },
     { x: _bBox.right, y: _bBox.top, z: 1 },
     { x: _bBox.right, y: _bBox.bottom, z: 1 },
-    { x: _bBox.left, y: _bBox.bottom, z: 1 }];
+    { x: _bBox.left, y: _bBox.bottom, z: 1 }], tempBBox;
 
   // Note: This is a easier way to solve the problem.
   // but it is not a reliable way as event.offsetX is experimental attribute
@@ -121,13 +121,9 @@ function getOriCoordinate(element, event, useOffset = false) {
         matrix = [
           a, c, e,
           b, d, f];
-        left = 0; top = 0; tempEl = el;
-        do {
-          left += tempEl.offsetLeft;
-          top += tempEl.offsetTop;
-          tempEl = tempEl.offsetParent;
-        } while (tempEl);
 
+        tempBBox = _getOffsetBBox(el);
+        left = tempBBox.left; top = tempBBox.top;
 
         let bx1 = applyTransform({ x: coords[0].x - left, y: coords[0].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix),
         bx2 = applyTransform({ x: coords[1].x - left, y: coords[1].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix),
@@ -160,13 +156,9 @@ function getOriCoordinate(element, event, useOffset = false) {
           c1, c2, c3, c4,
           d1, d2, d3, d4
         ];
-        left = 0; top = 0; tempEl = el;
-        do {
-          left += tempEl.offsetLeft;
-          top += tempEl.offsetTop;
-          tempEl = tempEl.offsetParent;
-        } while (tempEl);
-
+        
+        tempBBox = _getOffsetBBox(el);
+        left = tempBBox.left; top = tempBBox.top;
 
         let bx1 = applyTransform({ x: coords[0].x - left, y: coords[0].y - top, z: coords[0].z }, { oriX: ori[0], oriY: ori[1] }, matrix),
         bx2 = applyTransform({ x: coords[1].x - left, y: coords[1].y - top, z: coords[1].z }, { oriX: ori[0], oriY: ori[1] }, matrix),
@@ -182,12 +174,7 @@ function getOriCoordinate(element, event, useOffset = false) {
           elem: el,
           oriX,
           oriY,
-          matrix: [
-            a1, a2, a3, a4,
-            b1, b2, b3, b4,
-            c1, c2, c3, c4,
-            d1, d2, d3, d4
-          ],
+          matrix,
           offsetLeft: left,
           offsetTop: top,
           offsetHeight: el.offsetHeight,
@@ -203,6 +190,7 @@ function getOriCoordinate(element, event, useOffset = false) {
 
   left = _bBox.left; top = _bBox.top;
 
+  // calculate z' at mouse coordinate (x', y')
   let { A, B, C } = parseCoefficients(inverse([
     coords[0].x, coords[0].y, 1,
     coords[1].x, coords[1].y, 1,
@@ -212,6 +200,7 @@ function getOriCoordinate(element, event, useOffset = false) {
 
   while((el = elList.pop())) {
     if (el.matrix.length === 16) {
+      // 3d transformation applied
       tempEl = el;
       x = x - tempEl.offsetLeft;
       y = y - tempEl.offsetTop;
