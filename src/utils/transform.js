@@ -70,8 +70,29 @@ function getOriCoordinateByOffsets (element, event) {
   };
 }
 
+function _getOffsetBBox (element) {
+  let left = 0, top = 0, tempEl = element;
+  
+  do {
+    left += tempEl.offsetLeft;
+    top += tempEl.offsetTop;
+    tempEl = tempEl.offsetParent;
+  } while (tempEl);
+  
+  return {
+    left, top,
+    right: left + element.offsetWidth,
+    bottom: top + element.offsetHeight
+  };
+}
+
 function getOriCoordinate(element, event, useOffset = false) {
-  let { x, y } = parseEventCoordinates(filterEvent(event)), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, hasTransform = false, is3DTransform = false, scrollTop = 0, scrollLeft = 0;
+  let { x, y } = parseEventCoordinates(filterEvent(event)), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, scrollTop = 0, scrollLeft = 0,
+  _bBox = _getOffsetBBox(element), coords = [
+    { x: _bBox.left, y: _bBox.top, z: 1 },
+    { x: _bBox.right, y: _bBox.top, z: 1 },
+    { x: _bBox.right, y: _bBox.bottom, z: 1 },
+    { x: _bBox.left, y: _bBox.bottom, z: 1 }];
 
   // Note: This is a easier way to solve the problem.
   // but it is not a reliable way as event.offsetX is experimental attribute
@@ -95,8 +116,11 @@ function getOriCoordinate(element, event, useOffset = false) {
       oriX = ori[0]; oriY = ori[1];
       mat = cs.getPropertyValue('transform').split('(')[1].split(')')[0].split(',').map(e => parseFloat(e.trim()));
       if (mat.length === 6) {
-        // 2d transformation matrix otherwise ignore
-        let [a, b, c, d, e, f] = mat;
+        // 2d transformation matrix
+        let [a, b, c, d, e, f] = mat,
+        matrix = [
+          a, c, e,
+          b, d, f];
         left = 0; top = 0; tempEl = el;
         do {
           left += tempEl.offsetLeft;
@@ -104,36 +128,55 @@ function getOriCoordinate(element, event, useOffset = false) {
           tempEl = tempEl.offsetParent;
         } while (tempEl);
 
+
+        let bx1 = applyTransform({ x: coords[0].x - left, y: coords[0].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx2 = applyTransform({ x: coords[1].x - left, y: coords[1].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx3 = applyTransform({ x: coords[2].x - left, y: coords[2].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx4 = applyTransform({ x: coords[3].x - left, y: coords[3].y - top }, { oriX: ori[0], oriY: ori[1] }, matrix);
+
+        coords[0].x = bx1.x + left; coords[0].y = bx1.y + top;
+        coords[1].x = bx2.x + left; coords[1].y = bx2.y + top;
+        coords[2].x = bx3.x + left; coords[2].y = bx3.y + top;
+        coords[3].x = bx4.x + left; coords[3].y = bx4.y + top;
+
         elList.push({
           elem: el,
           oriX,
           oriY,
-          invM: inverse([
-            a, c, e,
-            b, d, f
-          ]),
-          matrix: [
-            a, c, e,
-            b, d, f],
+          invM: inverse(matrix),
+          matrix,
           offsetLeft: left,
           offsetTop: top
         });
-        hasTransform = true;
       } else if (mat.length === 16) {
-        is3DTransform = true;
-        hasTransform = true;
         let [
           a1, b1, c1, d1,
           a2, b2, c2, d2,
           a3, b3, c3, d3,
           a4, b4, c4, d4
-        ] = mat;
+        ] = mat, matrix = [
+          a1, a2, a3, a4,
+          b1, b2, b3, b4,
+          c1, c2, c3, c4,
+          d1, d2, d3, d4
+        ];
         left = 0; top = 0; tempEl = el;
         do {
           left += tempEl.offsetLeft;
           top += tempEl.offsetTop;
           tempEl = tempEl.offsetParent;
         } while (tempEl);
+
+
+        let bx1 = applyTransform({ x: coords[0].x - left, y: coords[0].y - top, z: coords[0].z }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx2 = applyTransform({ x: coords[1].x - left, y: coords[1].y - top, z: coords[1].z }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx3 = applyTransform({ x: coords[2].x - left, y: coords[2].y - top, z: coords[2].z }, { oriX: ori[0], oriY: ori[1] }, matrix),
+        bx4 = applyTransform({ x: coords[3].x - left, y: coords[3].y - top, z: coords[3].z }, { oriX: ori[0], oriY: ori[1] }, matrix);
+
+        coords[0].x = bx1.x + left; coords[0].y = bx1.y + top;  coords[0].z = bx1.z;
+        coords[1].x = bx2.x + left; coords[1].y = bx2.y + top;  coords[1].z = bx2.z;
+        coords[2].x = bx3.x + left; coords[2].y = bx3.y + top;  coords[2].z = bx3.z;
+        coords[3].x = bx4.x + left; coords[3].y = bx4.y + top;  coords[3].z = bx4.z;
 
         elList.push({
           elem: el,
@@ -158,36 +201,26 @@ function getOriCoordinate(element, event, useOffset = false) {
   x += scrollLeft;
   y += scrollTop;
 
-  // calculate for target element (span)
-  left = 0; top = 0; tempEl = element;
-  do {
-    left += tempEl.offsetLeft;
-    top += tempEl.offsetTop;
-    tempEl = tempEl.offsetParent;
-  } while (tempEl);
+  left = _bBox.left; top = _bBox.top;
+
+  let { A, B, C } = parseCoefficients(inverse([
+    coords[0].x, coords[0].y, 1,
+    coords[1].x, coords[1].y, 1,
+    coords[2].x, coords[2].y, 1
+  ]), [coords[0].z, coords[1].z, coords[2].z]), z;
+  z = A * x + B * y + C;
 
   while((el = elList.pop())) {
     if (el.matrix.length === 16) {
       tempEl = el;
-      let chartBBox = { x1: 0, y1: 0, x2: tempEl.offsetWidth, y2: tempEl.offsetHeight },
-        bx1 = applyTransform({ x: chartBBox.x1, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-        bx2 = applyTransform({ x: chartBBox.x2, y: chartBBox.y1, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-        bx3 = applyTransform({ x: chartBBox.x2, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-        // bx4 = applyTransform({ x: chartBBox.x1, y: chartBBox.y2, z: 1 }, { oriX: ori[0], oriY: ori[1] }, tempEl.matrix),
-        { A, B, C } = parseCoefficients(inverse([
-          bx1.x, bx1.y, 1,
-          bx2.x, bx2.y, 1,
-          bx3.x, bx3.y, 1
-        ]), [bx1.z, bx2.z, bx3.z]), z;
       x = x - tempEl.offsetLeft;
       y = y - tempEl.offsetTop;
-      z = A * x + B * y + C;
       temp = applyTransform({ x, y, z }, { oriX: ori[0], oriY: ori[1] }, inverse(tempEl.matrix));
       x = temp.x + tempEl.offsetLeft;
       y = temp.y + tempEl.offsetTop;
       z = temp.z;
     } else if (el.matrix.length === 6) {
-      // 2d transform applid
+      // 2d transform applied
       x = x - el.offsetLeft;
       y = y - el.offsetTop;
       temp = applyTransform({ x, y }, { oriX: el.oriX, oriY: el.oriY }, el.invM);
