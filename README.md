@@ -1,5 +1,5 @@
 # De-Transform
-JavasScript module to get original event coordinates relative to a DOM element when CSS transforms (2D/3D) are applied on it or it's parent elements.
+JavaScript module to get original event coordinates relative to a DOM element when CSS transforms (2D/3D) are applied on it or it's parent elements.
 
 ## Use Cases:
 Javascript based canvas libraries / charting libraris relies on coordinates to find out on which element a MouseEvent (click, hover etc) is fired. When css transform is applied on the container or any parent element the coordinates are changed it results incorrect element detection on Mouse Event.
