@@ -70,7 +70,7 @@ In this method `offsetX`, `offsetY` and `event.target || event.srcElement` are p
 ###### Which method is to choose ???
 Definately the 2nd method looks efficient and very easy to understand. But MouseEvent.offsetX and MouseEvent.offsetY are experimental features and they doesn't return accurate values when 3D transform is applied on a HTML element on Firefox which leads to incorrect outputs. On webkit based browsers (eg. Chrome, Safari etc.) 2nd method works well.
 
-But the 1st method is implemented to extend support all browsers which support CSS transform (IE9+). This method works well when css 2d transformation is applied on multiple parent elements in the same hierarchically of provided element but it supports to have only one css 3D transformation on any of it's parent element (this will be fixed soon).
+But the 1st method is implemented to extend support all browsers which support CSS transform (IE9+). This method works well when css 2d transformation is applied on multiple parent elements in the same hierarchy of provided element but it supports to have only one css 3D transformation on any of it's parent element (this will be fixed soon).
 
 So it is prefered to use useOffset = false when you need crossbrowser support.
 
