@@ -92,6 +92,15 @@
                 opX.value = oriCoord.x.toFixed(0);
                 opY.value = oriCoord.y.toFixed(0);
             });
+            elem.addEventListener('dragstart', function (e) {
+                DeTransform.getOriDragDistance(elem, e, 'start');
+            });
+            elem.addEventListener('drag', function (e) {
+                console.log(DeTransform.getOriDragDistance(elem, e, 'move'));
+            });
+            elem.addEventListener('dragend', function (e) {
+                DeTransform.getOriDragDistance(elem, e, 'move');
+            });
             btnSet.addEventListener('click', function(e) {
                 box.style.cssText = 'transform: ' + inpTransform.value + ';transform-origin:' + inpTransformOrigin.value + ';';
             });

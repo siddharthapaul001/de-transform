@@ -82,11 +82,11 @@ function getOriCoordinate(element, event, useOffset = false) {
 
   do {
     cs = window.getComputedStyle(el);
-    if (el.tagName !== 'BODY' && cs.getPropertyValue('overflow') === 'auto' || cs.getPropertyValue('overflow') === 'scroll') {
+    if (el.tagName !== 'BODY' && (cs.getPropertyValue('overflow') === 'auto' || cs.getPropertyValue('overflow') === 'scroll')) {
       if (el.scrollHeight > el.offsetHeight) {
         scrollTop += el.scrollTop;
       }
-      if (el.scrollHeight > el.offsetHeight) {
+      if (el.scrollWidth > el.offsetWidth) {
         scrollLeft += el.scrollLeft;
       }
     }
