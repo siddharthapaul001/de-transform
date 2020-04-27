@@ -71,7 +71,11 @@ function getOriCoordinateByOffsets (element, event) {
 }
 
 function getOriCoordinate(element, event, useOffset = false) {
-  let { x, y } = parseEventCoordinates(filterEvent(event)), cs, ori, mat, el = element, elList = [], left = 0, top = 0, temp, tempEl, oriX, oriY, hasTransform = false, is3DTransform = false, scrollTop = 0, scrollLeft = 0;
+  let { x, y } = parseEventCoordinates(filterEvent(event)),
+  cs, ori, oriX, oriY, mat,
+  el = element, elList = [], left = 0, top = 0, temp, tempEl,
+  hasTransform = false, is3DTransform = false,
+  scrollTop = 0, scrollLeft = 0;
 
   // Note: This is a easier way to solve the problem.
   // but it is not a reliable way as event.offsetX is experimental attribute
